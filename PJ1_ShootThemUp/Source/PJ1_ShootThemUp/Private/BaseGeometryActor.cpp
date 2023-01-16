@@ -3,7 +3,7 @@
 
 #include "BaseGeometryActor.h"
 #include "Engine/Engine.h"
-
+#include "Materials/MaterialInstanceDynamic.h"
 
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseGeometry, All, All)
@@ -27,9 +27,11 @@ void ABaseGeometryActor::BeginPlay()
 
 	InitialLocation = GetActorLocation(); 
 
-	//printTransform();
-	//printStringTypes();
-	//printTypes();
+	//PrintTransform();
+	//PrintStringTypes();
+	//PrintTypes();
+
+	SetColor(GeometryData.Color);
 
 }
 
@@ -38,15 +40,34 @@ void ABaseGeometryActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// z = z0 + amplitude * sin(freq* t);
-	FVector CurrentLocation = GetActorLocation();
-	float time = GetWorld()->GetTimeSeconds();
-	CurrentLocation.Z = InitialLocation.Z + Amplitude * FMath::Sin(Frequency * time);
-	SetActorLocation(CurrentLocation);
+	HandleMovement();
+}
+
+
+void ABaseGeometryActor::HandleMovement()
+{
+	switch (GeometryData.MoveType)
+	{
+		case EMovementType::Sin:
+		{
+			// z = z0 + amplitude * sin(freq* t);
+			FVector CurrentLocation = GetActorLocation();
+			float Time = GetWorld()->GetTimeSeconds();
+			CurrentLocation.Z = InitialLocation.Z + GeometryData.Amplitude * FMath::Sin(GeometryData.Frequency * Time);
+			
+			SetActorLocation(CurrentLocation);
+		}
+		break;
+
+		case EMovementType::Static:break;
+		default:break;
+	}
 
 }
 
-void ABaseGeometryActor::printTypes()
+
+
+void ABaseGeometryActor::PrintTypes()
 {
 	UE_LOG(LogBaseGeometry, Warning, TEXT("Actor name %s"), *GetName());
 	UE_LOG(LogBaseGeometry, Warning, TEXT("Weapons num: %d, kills num: %i"), WeaponsNum, KillsNum);
@@ -55,7 +76,7 @@ void ABaseGeometryActor::printTypes()
 	UE_LOG(LogBaseGeometry, Warning, TEXT("HasWeapon: %d"), static_cast<int>(HasWeapon));
 }
 
-void ABaseGeometryActor::printStrintTypes()
+void ABaseGeometryActor::PrintStrintTypes()
 {
 	FString Name = "John Connor";
 	UE_LOG(LogBaseGeometry, Display, TEXT("Name: %s"), *Name);
@@ -74,7 +95,7 @@ void ABaseGeometryActor::printStrintTypes()
 
 }
 
-void ABaseGeometryActor::printTransform()
+void ABaseGeometryActor::PrintTransform()
 {
 
 	FTransform Transform = GetActorTransform();
@@ -92,3 +113,13 @@ void ABaseGeometryActor::printTransform()
 
 }
 
+void ABaseGeometryActor::SetColor(const FLinearColor& Color)
+{
+
+	UMaterialInstanceDynamic* DynMaterial = BaseMesh->CreateAndSetMaterialInstanceDynamic(0);
+	if (true)
+	{
+		DynMaterial->SetVectorParameterValue("Color", Color);
+	}
+
+}
